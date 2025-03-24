@@ -16,7 +16,10 @@ $valid_pages = [
     'notifications',
     'login',
     'api',
-    '404'
+    'support',
+    'add_hardware',
+    '404',
+    'management'
 ];
 
 // Verificar si la página solicitada es válida
@@ -162,6 +165,8 @@ if($page == 'api') {
         include_once 'app/views/inventory_view.php';
     } elseif($page == 'inventory' && $action == 'edit' && isset($_GET['id'])) {
         include_once 'app/views/inventory_edit.php';
+    } elseif($page == 'add_hardware') {
+        include_once 'app/views/add_hardware.php';
     } elseif($page == 'users' && $action == 'view' && isset($_GET['id'])) {
         include_once 'app/views/user_view.php';
     } elseif($page == 'users' && $action == 'edit' && isset($_GET['id'])) {

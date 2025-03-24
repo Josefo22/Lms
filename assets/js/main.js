@@ -1,23 +1,51 @@
 document.addEventListener('DOMContentLoaded', function() {
     /**
+     * Ajustar automáticamente el contenido para evitar superposición con el sidebar
+     */
+    function adjustContentMargin() {
+        const sidebar = document.querySelector('#sidebar');
+        const contentElements = document.querySelectorAll('.content-with-sidebar');
+        
+        if (sidebar && contentElements.length > 0) {
+            if (window.innerWidth > 768) {
+                // En pantallas grandes, dar margen para el sidebar
+                contentElements.forEach(el => {
+                    el.style.marginLeft = '250px';
+                });
+            } else {
+                // En pantallas pequeñas, quitar margen
+                contentElements.forEach(el => {
+                    el.style.marginLeft = '0';
+                });
+            }
+        }
+    }
+    
+    // Ejecutar al cargar y al cambiar tamaño de ventana
+    adjustContentMargin();
+    window.addEventListener('resize', adjustContentMargin);
+
+    /**
      * Toggle sidebar en dispositivos móviles
      */
     const sidebarToggle = document.querySelector('#sidebarToggle');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', function() {
             const sidebar = document.querySelector('#sidebar');
-            const content = document.querySelector('#content');
+            const contentElements = document.querySelectorAll('.content-with-sidebar');
             
             sidebar.classList.toggle('active');
             
-            // Ajustar contenido solo en móviles
-            if (window.innerWidth <= 768) {
-                if (sidebar.classList.contains('active')) {
-                    content.style.marginLeft = '250px';
-                } else {
-                    content.style.marginLeft = '0';
+            // Ajustar el contenido según el estado del sidebar
+            contentElements.forEach(content => {
+                if (window.innerWidth <= 768) {
+                    if (sidebar.classList.contains('active')) {
+                        content.style.marginLeft = '250px';
+                    } else {
+                        content.style.marginLeft = '0';
+                    }
                 }
-            }
+            });
         });
     }
 

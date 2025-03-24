@@ -15,18 +15,28 @@ class AuthController {
 
     public function login($email, $password) {
         try {
-            $result = $this->user->login($email, $password);
+            // Verificar si el usuario existe y está activo
+            $query = 'SELECT * FROM users WHERE email = :email AND status = "Active"';
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':email', $email);
+            $stmt->execute();
             
-            if($result) {
-                // Crear sesión con los datos actualizados
-                $_SESSION['user_id'] = $result['user_id'];
-                $_SESSION['username'] = $result['first_name'] . ' ' . $result['last_name']; // Nombre completo como username
-                $_SESSION['email'] = $result['email'];
-                $_SESSION['job_title'] = $result['job_title'];
-                $_SESSION['department'] = $result['department'];
-                $_SESSION['status'] = $result['status'];
+            if($stmt->rowCount() > 0) {
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
                 
-                return true;
+                // Verificar la contraseña
+                if(password_verify($password, $user['password'])) {
+                    // Crear sesión con los datos del usuario
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['username'] = $user['first_name'] . ' ' . $user['last_name'];
+                    $_SESSION['email'] = $user['email'];
+                    $_SESSION['job_title'] = $user['job_title'];
+                    $_SESSION['department'] = $user['department'];
+                    $_SESSION['status'] = $user['status'];
+                    $_SESSION['employee_id'] = $user['employee_id'];
+                    
+                    return true;
+                }
             }
             
             return false;
@@ -53,9 +63,14 @@ class AuthController {
     
     public function getCurrentUser() {
         if($this->isLoggedIn()) {
-            $this->user->user_id = $_SESSION['user_id'];
-            $this->user->read_single();
-            return $this->user;
+            $query = 'SELECT * FROM users WHERE user_id = :user_id';
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':user_id', $_SESSION['user_id']);
+            $stmt->execute();
+            
+            if($stmt->rowCount() > 0) {
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+            }
         }
         return null;
     }

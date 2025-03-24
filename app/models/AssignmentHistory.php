@@ -80,16 +80,22 @@ class AssignmentHistory {
 
     // Crear un nuevo registro de asignación
     public function create() {
+        // Verificar si hay client_id en la propiedad
+        $hasCClientId = isset($this->client_id) && $this->client_id !== null;
+        
         $query = 'INSERT INTO ' . $this->table . ' 
-                  (hardware_id, user_id, assigned_date, assigned_by, assignment_notes, status) 
+                  (hardware_id, user_id, ' . ($hasCClientId ? 'client_id, ' : '') . 'assigned_date, assigned_by, assignment_notes, status) 
                   VALUES 
-                  (:hardware_id, :user_id, :assigned_date, :assigned_by, :assignment_notes, :status)';
+                  (:hardware_id, :user_id, ' . ($hasCClientId ? ':client_id, ' : '') . ':assigned_date, :assigned_by, :assignment_notes, :status)';
                   
         $stmt = $this->conn->prepare($query);
         
         // Limpiar datos
         $this->hardware_id = htmlspecialchars(strip_tags($this->hardware_id));
         $this->user_id = htmlspecialchars(strip_tags($this->user_id));
+        if($hasCClientId) {
+            $this->client_id = htmlspecialchars(strip_tags($this->client_id));
+        }
         $this->assigned_by = htmlspecialchars(strip_tags($this->assigned_by));
         $this->assignment_notes = htmlspecialchars(strip_tags($this->assignment_notes));
         $this->status = 'Assigned';
@@ -102,6 +108,9 @@ class AssignmentHistory {
         // Bind params
         $stmt->bindParam(':hardware_id', $this->hardware_id);
         $stmt->bindParam(':user_id', $this->user_id);
+        if($hasCClientId) {
+            $stmt->bindParam(':client_id', $this->client_id);
+        }
         $stmt->bindParam(':assigned_date', $this->assigned_date);
         $stmt->bindParam(':assigned_by', $this->assigned_by);
         $stmt->bindParam(':assignment_notes', $this->assignment_notes);

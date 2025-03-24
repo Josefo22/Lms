@@ -25,158 +25,161 @@ if(isset($data['error'])) {
 $user = $data['user'];
 ?>
 
-<div class="container-fluid pt-4 px-4">
-    <div class="row g-4">
-        <div class="col-12">
-            <div class="bg-light rounded h-100 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h5 class="mb-0">Detalles del Usuario</h5>
-                    <div>
-                        <a href="?page=users" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left me-2"></i>Volver
-                        </a>
-                        <a href="?page=users&action=edit&id=<?php echo $user['user_id']; ?>" class="btn btn-primary">
-                            <i class="bi bi-pencil me-2"></i>Editar
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0">Información Personal</h6>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <th style="width: 40%">Nombre completo:</th>
-                                        <td><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>ID de Empleado:</th>
-                                        <td><?php echo htmlspecialchars($user['employee_id']); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Email:</th>
-                                        <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Teléfono:</th>
-                                        <td><?php echo htmlspecialchars($user['phone'] ?? 'No especificado'); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Cargo:</th>
-                                        <td><?php echo htmlspecialchars($user['job_title'] ?? 'No especificado'); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Departamento:</th>
-                                        <td><?php echo htmlspecialchars($user['department'] ?? 'No especificado'); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Rol en sistema:</th>
-                                        <td>
-                                            <?php 
-                                            $role_labels = [
-                                                'admin' => '<span class="badge bg-danger">Administrador</span>',
-                                                'manager' => '<span class="badge bg-primary">Gerente</span>',
-                                                'support' => '<span class="badge bg-info">Soporte Técnico</span>',
-                                                'user' => '<span class="badge bg-secondary">Usuario</span>'
-                                            ];
-                                            echo $role_labels[$user['role']] ?? $user['role']; 
-                                            ?>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Estado:</th>
-                                        <td>
-                                            <?php 
-                                            $status_labels = [
-                                                'active' => '<span class="badge bg-success">Activo</span>',
-                                                'inactive' => '<span class="badge bg-secondary">Inactivo</span>',
-                                                'suspended' => '<span class="badge bg-warning">Suspendido</span>'
-                                            ];
-                                            echo $status_labels[$user['status']] ?? $user['status']; 
-                                            ?>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
+<div id="content">
+    <div class="container-fluid pt-4 px-4 content-with-sidebar">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="bg-light rounded h-100 p-4 user-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4 user-header">
+                        <h5 class="mb-0"><i class="bi bi-person me-2"></i>Detalles del Usuario</h5>
+                        <div>
+                            <a href="?page=users" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Volver
+                            </a>
+                            <a href="?page=users&action=edit&id=<?php echo $user['user_id']; ?>" class="btn btn-primary">
+                                <i class="bi bi-pencil me-2"></i>Editar
+                            </a>
                         </div>
                     </div>
                     
-                    <div class="col-md-6">
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0">Información de Trabajo</h6>
-                            </div>
-                            <div class="card-body">
-                                <table class="table table-borderless">
-                                    <tr>
-                                        <th style="width: 40%">Cliente:</th>
-                                        <td>
-                                            <?php 
-                                            if (!empty($user['client_id'])) {
-                                                echo '<a href="?page=clients&action=view&id=' . $user['client_id'] . '">';
-                                                echo htmlspecialchars($user['client_name'] ?? 'Cliente #' . $user['client_id']);
-                                                echo '</a>';
-                                            } else {
-                                                echo 'No asignado';
-                                            }
-                                            ?>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Ubicación:</th>
-                                        <td>
-                                            <?php 
-                                            if (!empty($user['location_id'])) {
-                                                echo htmlspecialchars($user['location_name'] ?? 'Ubicación #' . $user['location_id']);
-                                            } else {
-                                                echo 'No especificada';
-                                            }
-                                            ?>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>Trabajo Remoto:</th>
-                                        <td><?php echo $user['is_remote'] ? 'Sí' : 'No'; ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Fecha de Registro:</th>
-                                        <td><?php echo date('d/m/Y H:i', strtotime($user['created_at'])); ?></td>
-                                    </tr>
-                                    <tr>
-                                        <th>Última Actualización:</th>
-                                        <td><?php echo date('d/m/Y H:i', strtotime($user['updated_at'])); ?></td>
-                                    </tr>
-                                </table>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Información Personal</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th style="width: 40%">Nombre completo:</th>
+                                            <td><?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>ID de Empleado:</th>
+                                            <td><?php echo htmlspecialchars($user['employee_id']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Email:</th>
+                                            <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Teléfono:</th>
+                                            <td><?php echo htmlspecialchars($user['phone'] ?? 'No especificado'); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Cargo:</th>
+                                            <td><?php echo htmlspecialchars($user['job_title'] ?? 'No especificado'); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Departamento:</th>
+                                            <td><?php echo htmlspecialchars($user['department'] ?? 'No especificado'); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Rol en sistema:</th>
+                                            <td>
+                                                <?php 
+                                                $role_labels = [
+                                                    'admin' => '<span class="badge bg-danger">Administrador</span>',
+                                                    'manager' => '<span class="badge bg-primary">Gerente</span>',
+                                                    'support' => '<span class="badge bg-info">Soporte Técnico</span>',
+                                                    'user' => '<span class="badge bg-secondary">Usuario</span>'
+                                                ];
+                                                // Verificar si existe la clave 'role' y obtener un valor por defecto si no existe
+                                                echo isset($user['role']) ? ($role_labels[strtolower($user['role'])] ?? $user['role']) : '<span class="badge bg-secondary">Usuario Regular</span>';
+                                                ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Estado:</th>
+                                            <td>
+                                                <?php 
+                                                $status_labels = [
+                                                    'active' => '<span class="badge bg-success">Activo</span>',
+                                                    'inactive' => '<span class="badge bg-secondary">Inactivo</span>',
+                                                    'suspended' => '<span class="badge bg-warning">Suspendido</span>'
+                                                ];
+                                                echo $status_labels[$user['status']] ?? $user['status']; 
+                                                ?>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- Equipos asignados -->
-                        <div class="card">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">Equipos Asignados</h6>
-                                <span id="equipmentCount" class="badge bg-primary"></span>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Información de Trabajo</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <th style="width: 40%">Cliente:</th>
+                                            <td>
+                                                <?php 
+                                                if (!empty($user['client_id'])) {
+                                                    echo '<a href="?page=clients&action=view&id=' . $user['client_id'] . '">';
+                                                    echo htmlspecialchars($user['client_name'] ?? 'Cliente #' . $user['client_id']);
+                                                    echo '</a>';
+                                                } else {
+                                                    echo 'No asignado';
+                                                }
+                                                ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Ubicación:</th>
+                                            <td>
+                                                <?php 
+                                                if (!empty($user['location_id'])) {
+                                                    echo htmlspecialchars($user['location_name'] ?? 'Ubicación #' . $user['location_id']);
+                                                } else {
+                                                    echo 'No especificada';
+                                                }
+                                                ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Trabajo Remoto:</th>
+                                            <td><?php echo $user['is_remote'] ? 'Sí' : 'No'; ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Fecha de Registro:</th>
+                                            <td><?php echo date('d/m/Y H:i', strtotime($user['created_at'])); ?></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Última Actualización:</th>
+                                            <td><?php echo date('d/m/Y H:i', strtotime($user['updated_at'])); ?></td>
+                                        </tr>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="card-body">
-                                <div id="userEquipment" class="table-responsive">
-                                    <p class="text-center">Cargando equipos asignados...</p>
+                            
+                            <!-- Equipos asignados -->
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">Equipos Asignados</h6>
+                                    <span id="equipmentCount" class="badge bg-primary"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div id="userEquipment" class="table-responsive">
+                                        <p class="text-center">Cargando equipos asignados...</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Opciones adicionales -->
-                <div class="mt-4">
-                    <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                        <i class="bi bi-key me-2"></i>Cambiar Contraseña
-                    </button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete(<?php echo $user['user_id']; ?>, '<?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>')">
-                        <i class="bi bi-trash me-2"></i>Eliminar Usuario
-                    </button>
+                    
+                    <!-- Opciones adicionales -->
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-warning me-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="bi bi-key me-2"></i>Cambiar Contraseña
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="confirmDelete(<?php echo $user['user_id']; ?>, '<?php echo htmlspecialchars($user['first_name'] . ' ' . $user['last_name']); ?>')">
+                            <i class="bi bi-trash me-2"></i>Eliminar Usuario
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -276,4 +279,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-</script> 
+</script>
+</div> <!-- Fin del div id="content" --> 

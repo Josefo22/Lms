@@ -305,6 +305,7 @@ CREATE TABLE `users` (
   `first_name` varchar(50) NOT NULL,
   `last_name` varchar(50) NOT NULL,
   `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `job_title` varchar(100) DEFAULT NULL,
   `department` varchar(100) DEFAULT NULL,
@@ -677,3 +678,9 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Insertar usuario administrador por defecto
+INSERT INTO `users` (`employee_id`, `first_name`, `last_name`, `email`, `password`, `job_title`, `department`, `status`) 
+VALUES ('ADMIN001', 'Administrador', 'Sistema', 'admin@example.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador del Sistema', 'IT', 'Active');
+
+-- La contraseña es 'password'

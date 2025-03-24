@@ -1,4 +1,4 @@
-<nav id="sidebar">
+<nav id="sidebar" class="sidebar-fixed">
     <div class="sidebar-header">
         <a href="<?php echo ROOT_URL; ?>" class="logo">
             <i class="bi bi-pc-display me-2"></i>
@@ -16,12 +16,6 @@
             <a href="<?php echo ROOT_URL; ?>index.php?page=inventory">
                 <i class="bi bi-box-seam"></i> 
                 <span>Inventario</span>
-            </a>
-        </li>
-        <li class="<?php echo ($page === 'clients' || $page === 'client_details') ? 'active' : ''; ?>">
-            <a href="<?php echo ROOT_URL; ?>index.php?page=clients">
-                <i class="bi bi-building"></i> 
-                <span>Clientes</span>
             </a>
         </li>
         <li class="<?php echo $page === 'users' ? 'active' : ''; ?>">
@@ -46,6 +40,11 @@
             <a href="<?php echo ROOT_URL; ?>index.php?page=settings">
                 <i class="bi bi-gear"></i> 
                 <span>Configuración</span>
+            </a>
+        </li>
+        <li>
+            <a href="?page=management" class="<?php echo $page == 'management' ? 'active' : ''; ?>">
+                <i class="bi bi-gear-fill me-2"></i> Gestión de Catálogos
             </a>
         </li>
     </ul>

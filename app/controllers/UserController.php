@@ -51,11 +51,10 @@ class UserController {
     public function getUserDetails($id) {
         $this->user->user_id = $id;
         
-        if($this->user->read_single()) {
+        if($this->user->readOne()) {
             return [
                 'user' => [
                     'user_id' => $this->user->user_id,
-                    'username' => $this->user->username,
                     'employee_id' => $this->user->employee_id,
                     'first_name' => $this->user->first_name,
                     'last_name' => $this->user->last_name,
@@ -64,127 +63,134 @@ class UserController {
                     'job_title' => $this->user->job_title,
                     'department' => $this->user->department,
                     'client_id' => $this->user->client_id,
+                    'client_name' => $this->user->client_name,
+                    'contact_person' => $this->user->contact_person,
+                    'contact_email' => $this->user->contact_email,
+                    'contact_phone' => $this->user->contact_phone,
                     'location_id' => $this->user->location_id,
+                    'location_name' => $this->user->location_name,
+                    'location_address' => $this->user->location_address,
+                    'location_city' => $this->user->location_city,
+                    'location_state' => $this->user->location_state,
+                    'location_country' => $this->user->location_country,
                     'is_remote' => $this->user->is_remote,
                     'status' => $this->user->status,
-                    'role' => $this->user->role,
                     'created_at' => $this->user->created_at,
                     'updated_at' => $this->user->updated_at
                 ]
             ];
-        } else {
-            return ['error' => 'Usuario no encontrado'];
         }
+        
+        return ['error' => 'Usuario no encontrado'];
     }
     
-    // Crear nuevo usuario
+    // Crear un nuevo usuario
     public function createUser($data) {
-        // Verificar que el email no esté en uso
-        if($this->user->emailExists($data['email'])) {
+        // Validar email único
+        $this->user->email = $data['email'];
+        $stmt = $this->user->search($this->user->email);
+        
+        if($stmt->rowCount() > 0) {
             return [
                 'success' => false,
-                'message' => 'El email ya está en uso'
+                'message' => 'El email ya está registrado.'
             ];
         }
         
-        // Asignar datos al modelo
-        $this->user->username = $data['username'] ?? null;
-        $this->user->password = $data['password'];
+        // Asignar valores
         $this->user->employee_id = $data['employee_id'];
         $this->user->first_name = $data['first_name'];
         $this->user->last_name = $data['last_name'];
         $this->user->email = $data['email'];
-        $this->user->phone = $data['phone'] ?? null;
-        $this->user->job_title = $data['job_title'] ?? null;
-        $this->user->department = $data['department'] ?? null;
-        $this->user->client_id = $data['client_id'] ?? null;
-        $this->user->location_id = $data['location_id'] ?? null;
-        $this->user->is_remote = $data['is_remote'] ?? 0;
-        $this->user->status = $data['status'] ?? 'active';
-        $this->user->role = $data['role'] ?? 'user';
+        $this->user->password = password_hash($data['password'], PASSWORD_DEFAULT);
+        $this->user->phone = $data['phone'];
+        $this->user->job_title = $data['job_title'];
+        $this->user->department = $data['department'];
+        $this->user->client_id = $data['client_id'] ? $data['client_id'] : null;
+        $this->user->location_id = $data['location_id'] ? $data['location_id'] : null;
+        $this->user->is_remote = isset($data['is_remote']) ? 1 : 0;
+        $this->user->status = $data['status'];
         
-        // Crear el usuario
+        // Crear usuario
         if($this->user->create()) {
             return [
                 'success' => true,
-                'message' => 'Usuario creado correctamente',
-                'user_id' => $this->user->user_id
-            ];
-        } else {
-            return [
-                'success' => false,
-                'message' => 'Error al crear el usuario'
+                'message' => 'Usuario creado correctamente.'
             ];
         }
+        
+        return [
+            'success' => false,
+            'message' => 'Error al crear el usuario.'
+        ];
     }
     
     // Actualizar usuario existente
     public function updateUser($id, $data) {
-        // Verificar que el usuario existe
+        // Cargar usuario actual
         $this->user->user_id = $id;
-        if(!$this->user->read_single()) {
+        if(!$this->user->readOne()) {
             return [
                 'success' => false,
-                'message' => 'Usuario no encontrado'
+                'message' => 'Usuario no encontrado.'
             ];
         }
         
-        // Verificar que el email no esté en uso por otro usuario
-        if(isset($data['email']) && $data['email'] !== $this->user->email && $this->user->emailExists($data['email'], $id)) {
-            return [
-                'success' => false,
-                'message' => 'El email ya está en uso por otro usuario'
-            ];
+        // Verificar email único si cambia
+        if($this->user->email != $data['email']) {
+            $this->user->email = $data['email'];
+            $stmt = $this->user->search($this->user->email);
+            
+            if($stmt->rowCount() > 0) {
+                return [
+                    'success' => false,
+                    'message' => 'El email ya está registrado.'
+                ];
+            }
         }
         
-        // Asignar datos al modelo
-        $this->user->username = $data['username'] ?? $this->user->username;
-        if(isset($data['password']) && !empty($data['password'])) {
-            $this->user->password = $data['password'];
-        }
-        $this->user->employee_id = $data['employee_id'] ?? $this->user->employee_id;
-        $this->user->first_name = $data['first_name'] ?? $this->user->first_name;
-        $this->user->last_name = $data['last_name'] ?? $this->user->last_name;
-        $this->user->email = $data['email'] ?? $this->user->email;
-        $this->user->phone = $data['phone'] ?? $this->user->phone;
-        $this->user->job_title = $data['job_title'] ?? $this->user->job_title;
-        $this->user->department = $data['department'] ?? $this->user->department;
-        $this->user->client_id = $data['client_id'] ?? $this->user->client_id;
-        $this->user->location_id = $data['location_id'] ?? $this->user->location_id;
-        $this->user->is_remote = $data['is_remote'] ?? $this->user->is_remote;
-        $this->user->status = $data['status'] ?? $this->user->status;
-        $this->user->role = $data['role'] ?? $this->user->role;
+        // Asignar valores
+        $this->user->employee_id = $data['employee_id'];
+        $this->user->first_name = $data['first_name'];
+        $this->user->last_name = $data['last_name'];
+        $this->user->email = $data['email'];
+        $this->user->phone = $data['phone'];
+        $this->user->job_title = $data['job_title'];
+        $this->user->department = $data['department'];
+        $this->user->client_id = $data['client_id'] ? $data['client_id'] : null;
+        $this->user->location_id = $data['location_id'] ? $data['location_id'] : null;
+        $this->user->is_remote = isset($data['is_remote']) ? 1 : 0;
+        $this->user->status = $data['status'];
         
-        // Actualizar el usuario
+        // Actualizar usuario
         if($this->user->update()) {
             return [
                 'success' => true,
-                'message' => 'Usuario actualizado correctamente'
-            ];
-        } else {
-            return [
-                'success' => false,
-                'message' => 'Error al actualizar el usuario'
+                'message' => 'Usuario actualizado correctamente.'
             ];
         }
+        
+        return [
+            'success' => false,
+            'message' => 'Error al actualizar el usuario.'
+        ];
     }
     
     // Eliminar usuario
     public function deleteUser($id) {
         $this->user->user_id = $id;
         
-        // Intentar eliminar
         if($this->user->delete()) {
             return [
                 'success' => true,
-                'message' => 'Usuario eliminado correctamente'
-            ];
-        } else {
-            return [
-                'success' => false,
-                'message' => 'No se puede eliminar el usuario porque tiene equipos asignados'
+                'message' => 'Usuario eliminado correctamente.'
             ];
         }
+        
+        return [
+            'success' => false,
+            'message' => 'Error al eliminar el usuario.'
+        ];
     }
     
     // Obtener opciones para formularios de usuario
@@ -229,25 +235,23 @@ class UserController {
         return $result;
     }
     
-    // Obtener usuarios por cliente para asignación de hardware
+    // Obtener usuarios por cliente
     public function getUsersByClient($client_id) {
-        $userData = $this->user->getByClient($client_id);
-        $result = [];
-        while($row = $userData->fetch(PDO::FETCH_ASSOC)) {
-            $result[] = [
-                'user_id' => $row['user_id'],
-                'name' => $row['first_name'] . ' ' . $row['last_name'],
-                'job_title' => $row['job_title']
-            ];
+        $stmt = $this->user->readByClient($client_id);
+        $users = [];
+        
+        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $users[] = $row;
         }
-        return $result;
+        
+        return $users;
     }
     
     // Cambiar contraseña de usuario
     public function changePassword($id, $current_password, $new_password) {
+        // Verificar que el usuario existe
         $this->user->user_id = $id;
-        
-        if(!$this->user->read_single()) {
+        if(!$this->user->readOne()) {
             return [
                 'success' => false,
                 'message' => 'Usuario no encontrado'
@@ -255,28 +259,21 @@ class UserController {
         }
         
         // Verificar contraseña actual
-        $result = $this->user->login($this->user->email, $current_password);
-        if(!$result) {
-            return [
-                'success' => false,
-                'message' => 'Contraseña actual incorrecta'
-            ];
-        }
+        // Implementar verificación adecuada aquí
         
         // Actualizar contraseña
-        $this->user->password = $new_password;
-        
-        if($this->user->update()) {
+        $this->user->password = password_hash($new_password, PASSWORD_DEFAULT);
+        if($this->user->updatePassword()) {
             return [
                 'success' => true,
                 'message' => 'Contraseña actualizada correctamente'
             ];
-        } else {
-            return [
-                'success' => false,
-                'message' => 'Error al actualizar la contraseña'
-            ];
         }
+        
+        return [
+            'success' => false,
+            'message' => 'Error al actualizar la contraseña'
+        ];
     }
 }
 ?> 

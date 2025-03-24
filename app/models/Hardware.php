@@ -26,6 +26,9 @@ class Hardware {
     public $client_name;
     public $location_name;
     public $user_name;
+    
+    // Propiedad para almacenar mensajes de error
+    public $error_message;
 
     // Constructor
     public function __construct($db) {
@@ -211,21 +214,20 @@ class Hardware {
         return false;
     }
     
-    // Crear un nuevo hardware
+    // Crear nuevo hardware
     public function create() {
+        // Query SQL
         $query = 'INSERT INTO ' . $this->table . ' 
-                  (serial_number, asset_tag, model_id, purchase_date, warranty_expiry_date, 
-                   status, condition_status, notes, client_id, location_id) 
-                  VALUES 
-                  (:serial_number, :asset_tag, :model_id, :purchase_date, :warranty_expiry_date, 
-                   :status, :condition_status, :notes, :client_id, :location_id)';
-                  
+                  (serial_number, asset_tag, model_id, purchase_date, warranty_expiry_date, status, condition_status, notes, client_id, location_id, current_user_id)
+                  VALUES
+                  (:serial_number, :asset_tag, :model_id, :purchase_date, :warranty_expiry_date, :status, :condition_status, :notes, :client_id, :location_id, :current_user_id)';
+        
+        // Preparar statement
         $stmt = $this->conn->prepare($query);
         
         // Limpiar datos
         $this->serial_number = htmlspecialchars(strip_tags($this->serial_number));
         $this->asset_tag = htmlspecialchars(strip_tags($this->asset_tag));
-        $this->model_id = htmlspecialchars(strip_tags($this->model_id));
         $this->status = htmlspecialchars(strip_tags($this->status));
         $this->condition_status = htmlspecialchars(strip_tags($this->condition_status));
         $this->notes = htmlspecialchars(strip_tags($this->notes));
@@ -241,14 +243,21 @@ class Hardware {
         $stmt->bindParam(':notes', $this->notes);
         $stmt->bindParam(':client_id', $this->client_id);
         $stmt->bindParam(':location_id', $this->location_id);
+        $stmt->bindParam(':current_user_id', $this->current_user_id);
         
         // Ejecutar
-        if($stmt->execute()) {
-            $this->hardware_id = $this->conn->lastInsertId();
-            return true;
+        try {
+            if($stmt->execute()) {
+                $this->hardware_id = $this->conn->lastInsertId();
+                return true;
+            }
+            
+            $this->error_message = "Error desconocido en la base de datos";
+            return false;
+        } catch (PDOException $e) {
+            $this->error_message = $e->getMessage();
+            return false;
         }
-        
-        return false;
     }
     
     // Actualizar hardware existente
@@ -337,6 +346,40 @@ class Hardware {
         
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
+        
+        return $stmt;
+    }
+
+    // Leer hardware por cliente
+    public function readByClient($client_id) {
+        $query = "SELECT h.*, m.model_name, b.brand_name, c.category_name
+                FROM " . $this->table . " h
+                LEFT JOIN models m ON h.model_id = m.model_id
+                LEFT JOIN brands b ON m.brand_id = b.brand_id
+                LEFT JOIN hardwarecategories c ON m.category_id = c.category_id
+                WHERE h.client_id = ?
+                ORDER BY h.updated_at DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $client_id);
+        $stmt->execute();
+        
+        return $stmt;
+    }
+    
+    // Leer hardware por usuario
+    public function readByUser($user_id) {
+        $query = "SELECT h.*, m.model_name, b.brand_name, c.category_name
+                FROM " . $this->table . " h
+                LEFT JOIN models m ON h.model_id = m.model_id
+                LEFT JOIN brands b ON m.brand_id = b.brand_id
+                LEFT JOIN hardwarecategories c ON m.category_id = c.category_id
+                WHERE h.current_user_id = ?
+                ORDER BY h.updated_at DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $user_id);
         $stmt->execute();
         
         return $stmt;

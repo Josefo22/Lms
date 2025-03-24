@@ -15,6 +15,9 @@ class Model {
     // Propiedades adicionales
     public $brand_name;
     public $category_name;
+    
+    // Propiedad para almacenar mensajes de error
+    public $error_message;
 
     // Constructor
     public function __construct($db) {
@@ -67,31 +70,37 @@ class Model {
 
     // Crear un nuevo modelo
     public function create() {
-        $query = 'INSERT INTO ' . $this->table . ' 
-                  (brand_id, model_name, category_id, specifications) 
-                  VALUES (:brand_id, :model_name, :category_id, :specifications)';
-                  
+        // Query SQL
+        $query = 'INSERT INTO ' . $this->table . ' (model_name, brand_id, category_id, specifications) VALUES (:model_name, :brand_id, :category_id, :specifications)';
+        
+        // Preparar statement
         $stmt = $this->conn->prepare($query);
         
         // Limpiar datos
-        $this->brand_id = htmlspecialchars(strip_tags($this->brand_id));
         $this->model_name = htmlspecialchars(strip_tags($this->model_name));
-        $this->category_id = htmlspecialchars(strip_tags($this->category_id));
-        $this->specifications = htmlspecialchars(strip_tags($this->specifications));
+        $this->specifications = htmlspecialchars(strip_tags($this->specifications ?? ''));
+        
+        // NO aplicamos htmlspecialchars a los campos numéricos
+        $brand_id = $this->brand_id;
+        $category_id = $this->category_id;
         
         // Bind params
-        $stmt->bindParam(':brand_id', $this->brand_id);
         $stmt->bindParam(':model_name', $this->model_name);
-        $stmt->bindParam(':category_id', $this->category_id);
+        $stmt->bindParam(':brand_id', $brand_id);
+        $stmt->bindParam(':category_id', $category_id);
         $stmt->bindParam(':specifications', $this->specifications);
         
         // Ejecutar
-        if($stmt->execute()) {
-            $this->model_id = $this->conn->lastInsertId();
-            return true;
+        try {
+            if($stmt->execute()) {
+                $this->model_id = $this->conn->lastInsertId();
+                return true;
+            }
+            return false;
+        } catch (PDOException $e) {
+            $this->error_message = $e->getMessage();
+            return false;
         }
-        
-        return false;
     }
 
     // Actualizar un modelo existente

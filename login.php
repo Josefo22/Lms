@@ -22,7 +22,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         if($auth->login($email, $password)) {
             redirect('index.php');
         } else {
-            $error = 'Email o contraseña incorrectos';
+            $error = 'Credenciales incorrectas o cuenta inactiva. Por favor, verifica tu email y contraseña.';
         }
     }
 }
@@ -56,7 +56,6 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="mb-3">
                                 <label for="password" class="form-label">Contraseña</label>
                                 <input type="password" class="form-control" id="password" name="password" required>
-                                <small class="form-text text-muted">Usa tu apellido como contraseña</small>
                             </div>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">Iniciar sesión</button>

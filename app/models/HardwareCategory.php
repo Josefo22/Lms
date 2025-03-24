@@ -9,6 +9,9 @@ class HardwareCategory {
     public $description;
     public $created_at;
     public $updated_at;
+    
+    // Propiedad para almacenar mensajes de error
+    public $error_message;
 
     // Constructor
     public function __construct($db) {
@@ -47,26 +50,32 @@ class HardwareCategory {
 
     // Crear una nueva categoría
     public function create() {
-        $query = 'INSERT INTO ' . $this->table . ' 
-                  (category_name, description) 
-                  VALUES (:category_name, :description)';
+        // Query SQL
+        $query = 'INSERT INTO ' . $this->table . ' (category_name, description) VALUES (:category_name, :description)';
+        
+        // Preparar statement
         $stmt = $this->conn->prepare($query);
         
         // Limpiar datos
         $this->category_name = htmlspecialchars(strip_tags($this->category_name));
-        $this->description = htmlspecialchars(strip_tags($this->description));
+        $this->description = htmlspecialchars(strip_tags($this->description ?? ''));
         
         // Bind params
         $stmt->bindParam(':category_name', $this->category_name);
         $stmt->bindParam(':description', $this->description);
         
         // Ejecutar
-        if($stmt->execute()) {
-            $this->category_id = $this->conn->lastInsertId();
-            return true;
+        try {
+            if($stmt->execute()) {
+                $this->category_id = $this->conn->lastInsertId();
+                return true;
+            }
+            $this->error_message = "Error desconocido al crear la categoría";
+            return false;
+        } catch (PDOException $e) {
+            $this->error_message = $e->getMessage();
+            return false;
         }
-        
-        return false;
     }
 
     // Actualizar una categoría existente
