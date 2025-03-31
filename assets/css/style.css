@@ -1,0 +1,803 @@
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f8;
+    padding-top: 60px;
+    overflow-x: hidden;
+    color: #344767;
+}
+
+/* Navbar mejorado */
+.navbar {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(90deg, #2c3e50, #1a2639) !important;
+    height: 60px;
+    padding: 0 1.5rem;
+    z-index: 1040;
+}
+
+.navbar-brand {
+    font-size: 1.2rem !important;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #fff !important;
+    position: relative;
+    padding-left: 10px;
+}
+
+.navbar-brand:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 25%;
+    height: 50%;
+    width: 3px;
+    background: #3498db;
+    border-radius: 2px;
+}
+
+.nav-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.7rem 1rem !important;
+    transition: all 0.3s ease;
+}
+
+.navbar .dropdown-menu {
+    margin-top: 10px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    border: none;
+    min-width: 240px;
+}
+
+.navbar .dropdown-item {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.navbar .dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.navbar .dropdown-divider {
+    margin: 0.5rem 0;
+}
+
+.navbar .badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 0.65rem;
+    transform: translate(25%, -25%);
+}
+
+/* Estilos del sidebar mejorado */
+#sidebar {
+    position: fixed;
+    min-width: 270px;
+    max-width: 270px;
+    background: linear-gradient(180deg, #1a2639, #2c3e50);
+    color: #fff;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: calc(100vh - 60px);
+    z-index: 1030;
+    top: 60px;
+    left: 0;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+}
+
+#sidebar.active {
+    margin-left: -270px;
+}
+
+#sidebar .logo {
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    display: block;
+    transition: all 0.3s;
+    text-align: center;
+    padding: 1.5rem 0;
+}
+
+#sidebar ul li {
+    position: relative;
+}
+
+#sidebar ul li a {
+    padding: 15px 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    transition: all 0.3s;
+    border-radius: 8px;
+    margin: 0 10px;
+}
+
+#sidebar ul li a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+#sidebar ul li.active > a {
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);
+}
+
+#sidebar ul li a i {
+    margin-right: 15px;
+    font-size: 1.1rem;
+    width: 20px;
+    text-align: center;
+}
+
+#sidebar .footer {
+    padding: 20px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Botón toggle sidebar */
+#sidebarToggle {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    transition: all 0.3s;
+    margin-right: 15px;
+}
+
+#sidebarToggle:hover {
+    color: #3498db;
+    transform: rotate(90deg);
+}
+
+/* Contenido principal ajustado */
+#content {
+    width: calc(100% - 270px);
+    min-height: 100vh;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    margin-left: 270px;
+    padding: 30px;
+}
+
+#content.active {
+    width: 100%;
+    margin-left: 0;
+}
+
+/* Footer mejorado */
+.footer {
+    background: transparent;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.footer p {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+}
+
+/* Ajuste responsive */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -270px;
+    }
+    
+    #sidebar.active {
+        margin-left: 0;
+    }
+    
+    #content {
+        width: 100%;
+        margin-left: 0;
+        padding: 20px;
+    }
+    
+    #content.active {
+        margin-left: 270px;
+    }
+    
+    #sidebarToggle {
+        display: block;
+    }
+}
+
+/* Mejoras en las tarjetas */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    border: none;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+    font-weight: 600;
+    padding: 18px 25px;
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0,0,0,.03);
+}
+
+.card-body {
+    padding: 25px;
+}
+
+/* Tarjetas de estadísticas mejoradas */
+.card-body.bg-primary,
+.card-body.bg-success,
+.card-body.bg-warning,
+.card-body.bg-danger {
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-body.bg-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe) !important;
+}
+
+.card-body.bg-success {
+    background: linear-gradient(45deg, #1cc88a, #13855c) !important;
+}
+
+.card-body.bg-warning {
+    background: linear-gradient(45deg, #f6c23e, #dda20a) !important;
+}
+
+.card-body.bg-danger {
+    background: linear-gradient(45deg, #e74a3b, #be2617) !important;
+}
+
+.card-body.bg-primary::after,
+.card-body.bg-success::after,
+.card-body.bg-warning::after,
+.card-body.bg-danger::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100%;
+    opacity: 0.1;
+    transform: skewX(-30deg) translateX(50%);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.card h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card h6.card-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.card .bi {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+/* Mejora en las tablas */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    border-top: none;
+    padding: 15px;
+    color: #495057;
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 12px 15px;
+    color: #343a40;
+    border-color: rgba(0, 0, 0, 0.03);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.03);
+}
+
+.table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.03);
+}
+
+/* Estilos para botones mejorados */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    border: none;
+    box-shadow: 0 4px 10px rgba(78, 115, 223, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #224abe, #1a3a9c);
+    box-shadow: 0 6px 15px rgba(78, 115, 223, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #1cc88a, #13855c);
+    border: none;
+    box-shadow: 0 4px 10px rgba(28, 200, 138, 0.3);
+}
+
+.btn-success:hover {
+    background: linear-gradient(45deg, #13855c, #0e6245);
+    box-shadow: 0 6px 15px rgba(28, 200, 138, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-warning {
+    background: linear-gradient(45deg, #f6c23e, #dda20a);
+    border: none;
+    box-shadow: 0 4px 10px rgba(246, 194, 62, 0.3);
+    color: #fff;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(45deg, #dda20a, #c08e09);
+    box-shadow: 0 6px 15px rgba(246, 194, 62, 0.4);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: linear-gradient(45deg, #e74a3b, #be2617);
+    border: none;
+    box-shadow: 0 4px 10px rgba(231, 74, 59, 0.3);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(45deg, #be2617, #9e2014);
+    box-shadow: 0 6px 15px rgba(231, 74, 59, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+}
+
+.btn-action {
+    min-width: 120px;
+    margin-left: 10px;
+}
+
+/* Badges mejorados */
+.badge {
+    padding: 8px 12px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.bg-primary {
+    background: linear-gradient(45deg, #4e73df, #224abe) !important;
+}
+
+.bg-success {
+    background: linear-gradient(45deg, #1cc88a, #13855c) !important;
+}
+
+.bg-warning {
+    background: linear-gradient(45deg, #f6c23e, #dda20a) !important;
+}
+
+.bg-danger {
+    background: linear-gradient(45deg, #e74a3b, #be2617) !important;
+}
+
+.bg-info {
+    background: linear-gradient(45deg, #36b9cc, #258391) !important;
+}
+
+.bg-secondary {
+    background: linear-gradient(45deg, #858796, #60616f) !important;
+}
+
+/* Dashboard estilos */
+.dashboard-stats {
+    padding: 25px;
+    border-radius: 12px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Botón para volver arriba */
+.back-to-top {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 45px;
+    height: 45px;
+    line-height: 45px;
+    text-align: center;
+    background: linear-gradient(45deg, #4e73df, #224abe);
+    color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1025;
+    transition: all 0.3s;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.back-to-top.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Status indicators mejorados */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+    position: relative;
+}
+
+.status-indicator::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    opacity: 0.4;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
+}
+
+.status-active {
+    background-color: #1cc88a;
+}
+
+.status-inactive {
+    background-color: #e74a3b;
+}
+
+.status-pending {
+    background-color: #f6c23e;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* User profile */
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Utilities */
+.shadow-sm {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+}
+
+.rounded {
+    border-radius: 10px !important;
+}
+
+/* Títulos de secciones */
+.section-title {
+    font-size: 1.3rem !important;
+    font-weight: 600;
+    color: #3a3a3a;
+    margin-bottom: 20px;
+}
+
+/* Subtítulos de navegación */
+.nav-link {
+    font-size: 0.9rem;
+}
+
+/* Estilos para las tablas */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    border-top: none;
+    padding: 15px;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 12px 15px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+.table-responsive {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Estilos para botones */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.875rem;
+}
+
+.btn-action {
+    min-width: 120px;
+    margin-left: 10px;
+}
+
+/* Estilos para las badges */
+.badge {
+    padding: 7px 12px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    border-radius: 6px;
+}
+
+/* Formularios */
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: 1px solid #e1e5eb;
+    font-size: 1rem;
+    height: auto;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+/* Dropdown menú */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.dropdown-item {
+    padding: 10px 15px;
+    font-size: 0.9rem;
+}
+
+.dropdown-header {
+    padding: 10px 15px;
+    color: #6c757d;
+    font-weight: 600;
+}
+
+/* Icons */
+.bi {
+    vertical-align: middle;
+}
+
+/* Status indicators */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-active {
+    background-color: #28a745;
+}
+
+.status-inactive {
+    background-color: #dc3545;
+}
+
+.status-pending {
+    background-color: #ffc107;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* User profile */
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Utilities */
+.shadow-sm {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+}
+
+.rounded {
+    border-radius: 10px !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -220px;
+    }
+    #sidebar.active {
+        margin-left: 0;
+    }
+    #content {
+        width: 100%;
+        margin-left: 0;
+        padding: 15px;
+    }
+    .card h2 {
+        font-size: 2rem;
+    }
+    .btn {
+        padding: 6px 12px;
+        font-size: 0.875rem;
+    }
+}
+
+/* Estilos para el módulo de usuarios */
+.users-module {
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.users-module .table {
+    margin-bottom: 0;
+}
+
+.users-module .table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.users-module .search-bar {
+    margin-bottom: 20px;
+}
+
+.users-module .actions-column {
+    width: 150px;
+    text-align: right;
+}
+
+.users-module .btn-action {
+    padding: 5px 10px;
+    margin: 0 2px;
+}
+
+.users-module .table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+} 
