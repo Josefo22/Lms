@@ -90,11 +90,11 @@ class SupportController {
             $sql = "INSERT INTO supportrequests (
                         user_id, request_type, hardware_id, description,
                         priority, status, assigned_to, resolution_notes,
-                        created_at, updated_at
+                        client_id, created_at, updated_at
                     ) VALUES (
                         ?, ?, ?, ?,
                         ?, ?, ?, ?,
-                        NOW(), NOW()
+                        ?, NOW(), NOW()
                     )";
             
             $stmt = $this->db->prepare($sql);
@@ -106,7 +106,8 @@ class SupportController {
                 $data['priority'],
                 $data['status'],
                 $data['assigned_to'] ?: null,
-                $data['resolution_notes'] ?? null
+                $data['resolution_notes'] ?? null,
+                $data['client_id'] ?: null
             ]);
             
             $ticketId = $this->db->lastInsertId();
@@ -143,6 +144,7 @@ class SupportController {
                     status = ?,
                     assigned_to = ?,
                     resolution_notes = ?,
+                    client_id = ?,
                     updated_at = NOW()
                     WHERE request_id = ?";
             
@@ -155,6 +157,7 @@ class SupportController {
                 $data['status'],
                 $data['assigned_to'] ?: null,
                 $data['resolution_notes'] ?? null,
+                $data['client_id'] ?: null,
                 $id
             ]);
             
@@ -248,7 +251,7 @@ class SupportController {
     }
 
     public function getUserOptions() {
-        $sql = "SELECT user_id as id, CONCAT(first_name, ' ', last_name) as name 
+        $sql = "SELECT user_id as id, CONCAT(first_name, ' ', last_name) as name, client_id 
                 FROM users 
                 WHERE status = 'active' 
                 ORDER BY first_name, last_name";
@@ -262,6 +265,15 @@ class SupportController {
                 FROM hardware 
                 WHERE status = 'active' 
                 ORDER BY asset_tag";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getClientOptions() {
+        $sql = "SELECT client_id as id, client_name as name 
+                FROM clients 
+                ORDER BY client_name";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

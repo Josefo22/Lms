@@ -198,8 +198,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <option value="">Sin asignar</option>
                                         <?php foreach($formOptions['users'] as $user): ?>
                                         <option value="<?php echo $user['user_id']; ?>"
+                                                data-client="<?php echo $user['client_id']; ?>"
                                                 <?php echo ($user['user_id'] == $hardwareDetails['hardware']['current_user_id']) ? 'selected' : ''; ?>>
                                             <?php echo htmlspecialchars($user['name']); ?>
+                                            <?php if($user['job_title']): ?> (<?php echo htmlspecialchars($user['job_title']); ?>)<?php endif; ?>
                                         </option>
                                         <?php endforeach; ?>
                                     </select>
@@ -243,19 +245,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filtrar ubicaciones según el cliente seleccionado
     const clientSelect = document.getElementById('client_id');
     const locationSelect = document.getElementById('location_id');
+    const userSelect = document.getElementById('current_user_id');
     
     if (clientSelect && locationSelect) {
         clientSelect.addEventListener('change', function() {
             const clientId = this.value;
             const locationOptions = locationSelect.querySelectorAll('option');
             
-            // Mostrar opción "Sin asignar" siempre
-            locationSelect.value = '';
-            
-            // Recorrer opciones y mostrar/ocultar según el cliente
-            locationOptions.forEach(function(option) {
+            locationOptions.forEach(option => {
                 if (option.value === '') {
-                    option.style.display = 'block'; // Mostrar opción "Sin asignar"
+                    option.style.display = 'block'; // Siempre mostrar la opción "Sin asignar"
                 } else {
                     const optionClientId = option.getAttribute('data-client');
                     if (clientId === '' || optionClientId === clientId) {
@@ -265,7 +264,38 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
+            
+            // Resetear la selección si la opción actual no está visible
+            if (locationSelect.selectedOptions[0].style.display === 'none') {
+                locationSelect.value = '';
+            }
+            
+            // También filtrar usuarios por cliente
+            if (userSelect) {
+                const userOptions = userSelect.querySelectorAll('option');
+                
+                userOptions.forEach(option => {
+                    if (option.value === '') {
+                        option.style.display = 'block'; // Siempre mostrar la opción "Sin asignar"
+                    } else {
+                        const optionClientId = option.getAttribute('data-client');
+                        if (clientId === '' || optionClientId === clientId) {
+                            option.style.display = 'block';
+                        } else {
+                            option.style.display = 'none';
+                        }
+                    }
+                });
+                
+                // Resetear la selección si la opción actual no está visible
+                if (userSelect.selectedOptions[0] && userSelect.selectedOptions[0].style.display === 'none') {
+                    userSelect.value = '';
+                }
+            }
         });
+        
+        // Inicializar los filtros al cargar la página
+        clientSelect.dispatchEvent(new Event('change'));
     }
 });
 </script> 

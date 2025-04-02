@@ -36,6 +36,9 @@ $valid_pages = [
     'login',
     'api',
     'support',
+    'manage_categories',
+    'manage_brands',
+    'manage_models',
     '404'
 ];
 
@@ -53,7 +56,7 @@ include_once 'app/includes/navbar.php';
 include_once 'app/includes/sidebar.php';
 
 // Requerir controllers según la página
-if($page == 'inventory' || $page == 'add_hardware') {
+if($page == 'inventory' || $page == 'add_hardware' || $page == 'manage_categories' || $page == 'manage_brands' || $page == 'manage_models') {
     require_once 'app/controllers/InventoryController.php';
     $inventoryController = new InventoryController();
     
@@ -71,6 +74,114 @@ if($page == 'inventory' || $page == 'add_hardware') {
             }
         }
         include 'app/views/inventory/add.php';
+        exit;
+    }
+    
+    if($page == 'manage_categories') {
+        if($action) {
+            switch($action) {
+                case 'create':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $result = $inventoryController->createCategory($_POST);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_categories');
+                        exit;
+                    }
+                    break;
+                case 'update':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category_id'])) {
+                        $result = $inventoryController->updateCategory($_POST['category_id'], $_POST);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_categories');
+                        exit;
+                    }
+                    break;
+                case 'delete':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['category_id'])) {
+                        $result = $inventoryController->deleteCategory($_POST['category_id']);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_categories');
+                        exit;
+                    }
+                    break;
+            }
+        }
+        include 'app/views/inventory/manage_categories.php';
+        exit;
+    }
+    
+    if($page == 'manage_brands') {
+        if($action) {
+            switch($action) {
+                case 'create':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $result = $inventoryController->createBrand($_POST);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_brands');
+                        exit;
+                    }
+                    break;
+                case 'update':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['brand_id'])) {
+                        $result = $inventoryController->updateBrand($_POST['brand_id'], $_POST);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_brands');
+                        exit;
+                    }
+                    break;
+                case 'delete':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['brand_id'])) {
+                        $result = $inventoryController->deleteBrand($_POST['brand_id']);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_brands');
+                        exit;
+                    }
+                    break;
+            }
+        }
+        include 'app/views/inventory/manage_brands.php';
+        exit;
+    }
+    
+    if($page == 'manage_models') {
+        if($action) {
+            switch($action) {
+                case 'create':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST') {
+                        $result = $inventoryController->createModel($_POST);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_models');
+                        exit;
+                    }
+                    break;
+                case 'update':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['model_id'])) {
+                        $result = $inventoryController->updateModel($_POST['model_id'], $_POST);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_models');
+                        exit;
+                    }
+                    break;
+                case 'delete':
+                    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['model_id'])) {
+                        $result = $inventoryController->deleteModel($_POST['model_id']);
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = $result['success'] ? 'success' : 'danger';
+                        header('Location: index.php?page=manage_models');
+                        exit;
+                    }
+                    break;
+            }
+        }
+        include 'app/views/inventory/manage_models.php';
         exit;
     }
     
@@ -186,7 +297,30 @@ if($page == 'support') {
                         $_SESSION['message_type'] = 'danger';
                     }
                 }
+                // Cargar componentes comunes antes de incluir la vista
+                include_once 'app/includes/header.php';
+                include_once 'app/includes/navbar.php';
+                include_once 'app/includes/sidebar.php';
                 include 'app/views/support/create.php';
+                include_once 'app/views/partials/footer.php';
+                exit;
+                break;
+                
+            case 'store':
+                if($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $result = $supportController->createTicket($_POST);
+                    if ($result['success']) {
+                        $_SESSION['message'] = 'Solicitud creada exitosamente';
+                        $_SESSION['message_type'] = 'success';
+                        header('Location: index.php?page=support');
+                        exit;
+                    } else {
+                        $_SESSION['message'] = $result['message'];
+                        $_SESSION['message_type'] = 'danger';
+                        header('Location: index.php?page=support&action=create');
+                        exit;
+                    }
+                }
                 break;
                 
             case 'edit':
@@ -202,11 +336,23 @@ if($page == 'support') {
                         $_SESSION['message_type'] = 'danger';
                     }
                 }
+                // Cargar componentes comunes antes de incluir la vista
+                include_once 'app/includes/header.php';
+                include_once 'app/includes/navbar.php';
+                include_once 'app/includes/sidebar.php';
                 include 'app/views/support/edit.php';
+                include_once 'app/views/partials/footer.php';
+                exit;
                 break;
                 
             case 'view':
+                // Cargar componentes comunes antes de incluir la vista
+                include_once 'app/includes/header.php';
+                include_once 'app/includes/navbar.php';
+                include_once 'app/includes/sidebar.php';
                 include 'app/views/support/view.php';
+                include_once 'app/views/partials/footer.php';
+                exit;
                 break;
                 
             case 'resolve':
@@ -255,8 +401,22 @@ if($page == 'support') {
                 break;
                 
             default:
+                // Cargar componentes comunes antes de incluir la vista predeterminada
+                include_once 'app/includes/header.php';
+                include_once 'app/includes/navbar.php';
+                include_once 'app/includes/sidebar.php';
                 include 'app/views/support/index.php';
+                include_once 'app/views/partials/footer.php';
+                exit;
         }
+    } else {
+        // Cargar componentes comunes antes de incluir la vista predeterminada
+        include_once 'app/includes/header.php';
+        include_once 'app/includes/navbar.php';
+        include_once 'app/includes/sidebar.php';
+        include 'app/views/support/index.php';
+        include_once 'app/views/partials/footer.php';
+        exit;
     }
 }
 
@@ -264,6 +424,12 @@ if($page == 'support') {
 if($page == 'api') {
     // Asegurarse de que la respuesta sea JSON
     header('Content-Type: application/json');
+    
+    // Verificar si hay una sesión activa
+    if (!isset($_SESSION['user_id']) && !in_array($action, ['create_brand', 'create_category'])) {
+        echo json_encode(['error' => 'Sesión no iniciada']);
+        exit;
+    }
     
     switch($action) {
         case 'models':
@@ -307,6 +473,54 @@ if($page == 'api') {
                 echo json_encode($users);
             } else {
                 echo json_encode(['error' => 'Cliente no especificado']);
+            }
+            exit;
+            
+        case 'create_brand':
+            if($_SERVER['REQUEST_METHOD'] === 'POST') {
+                try {
+                    // Depurar datos
+                    error_log('POST Data: ' . print_r($_POST, true));
+                    
+                    if(empty($_POST['brand_name'])) {
+                        echo json_encode(['success' => false, 'message' => 'El nombre de la marca es obligatorio']);
+                        exit;
+                    }
+                    
+                    require_once 'app/controllers/InventoryController.php';
+                    $inventoryController = new InventoryController();
+                    $result = $inventoryController->createBrand($_POST);
+                    echo json_encode($result);
+                } catch (Exception $e) {
+                    error_log('Error en create_brand: ' . $e->getMessage());
+                    echo json_encode(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
+                }
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Método no permitido. Use POST']);
+            }
+            exit;
+            
+        case 'create_category':
+            if($_SERVER['REQUEST_METHOD'] === 'POST') {
+                try {
+                    // Depurar datos
+                    error_log('POST Data: ' . print_r($_POST, true));
+                    
+                    if(empty($_POST['category_name'])) {
+                        echo json_encode(['success' => false, 'message' => 'El nombre de la categoría es obligatorio']);
+                        exit;
+                    }
+                    
+                    require_once 'app/controllers/InventoryController.php';
+                    $inventoryController = new InventoryController();
+                    $result = $inventoryController->createCategory($_POST);
+                    echo json_encode($result);
+                } catch (Exception $e) {
+                    error_log('Error en create_category: ' . $e->getMessage());
+                    echo json_encode(['success' => false, 'message' => 'Error interno del servidor: ' . $e->getMessage()]);
+                }
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Método no permitido. Use POST']);
             }
             exit;
     }

@@ -13,6 +13,7 @@ class SupportRequest {
     public $status;
     public $assigned_to;
     public $resolution_notes;
+    public $client_id;
     public $created_at;
     public $updated_at;
     
@@ -20,6 +21,7 @@ class SupportRequest {
     public $user_name;
     public $hardware_details;
     public $assigned_to_name;
+    public $client_name;
 
     // Constructor
     public function __construct($db) {
@@ -77,8 +79,8 @@ class SupportRequest {
     // Crear una nueva solicitud de soporte
     public function create() {
         $query = 'INSERT INTO ' . $this->table . ' 
-                  (user_id, request_type, hardware_id, description, priority, status) 
-                  VALUES (:user_id, :request_type, :hardware_id, :description, :priority, :status)';
+                  (user_id, request_type, hardware_id, description, priority, status, client_id) 
+                  VALUES (:user_id, :request_type, :hardware_id, :description, :priority, :status, :client_id)';
                   
         $stmt = $this->conn->prepare($query);
         
@@ -100,6 +102,7 @@ class SupportRequest {
         $stmt->bindParam(':description', $this->description);
         $stmt->bindParam(':priority', $this->priority);
         $stmt->bindParam(':status', $this->status);
+        $stmt->bindParam(':client_id', $this->client_id);
         
         // Ejecutar
         if($stmt->execute()) {
@@ -115,6 +118,7 @@ class SupportRequest {
                   status = :status, 
                   assigned_to = :assigned_to,
                   resolution_notes = :resolution_notes,
+                  client_id = :client_id,
                   updated_at = NOW() 
                   WHERE request_id = :request_id';
                   
@@ -130,6 +134,7 @@ class SupportRequest {
         $stmt->bindParam(':status', $this->status);
         $stmt->bindParam(':assigned_to', $this->assigned_to);
         $stmt->bindParam(':resolution_notes', $this->resolution_notes);
+        $stmt->bindParam(':client_id', $this->client_id);
         
         // Ejecutar
         if($stmt->execute()) {

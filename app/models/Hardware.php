@@ -254,17 +254,17 @@ class Hardware {
     // Actualizar hardware existente
     public function update() {
         $query = 'UPDATE ' . $this->table . ' SET 
-                  serial_number = :serial_number,
-                  asset_tag = :asset_tag,
-                  model_id = :model_id,
-                  purchase_date = :purchase_date,
-                  warranty_expiry_date = :warranty_expiry_date,
-                  status = :status,
-                  condition_status = :condition_status,
-                  notes = :notes,
-                  client_id = :client_id,
-                  location_id = :location_id,
-                  current_user_id = :current_user_id
+                  serial_number = :serial_number, 
+                  asset_tag = :asset_tag, 
+                  model_id = :model_id, 
+                  purchase_date = :purchase_date, 
+                  warranty_expiry_date = :warranty_expiry_date, 
+                  status = :status, 
+                  condition_status = :condition_status, 
+                  notes = :notes, 
+                  client_id = :client_id, 
+                  location_id = :location_id, 
+                  current_user_id = :current_user_id 
                   WHERE hardware_id = :hardware_id';
                   
         $stmt = $this->conn->prepare($query);
@@ -276,21 +276,52 @@ class Hardware {
         $this->model_id = htmlspecialchars(strip_tags($this->model_id));
         $this->status = htmlspecialchars(strip_tags($this->status));
         $this->condition_status = htmlspecialchars(strip_tags($this->condition_status));
-        $this->notes = htmlspecialchars(strip_tags($this->notes));
+        
+        if ($this->notes !== null) {
+            $this->notes = htmlspecialchars(strip_tags($this->notes));
+        }
         
         // Bind params
         $stmt->bindParam(':hardware_id', $this->hardware_id);
         $stmt->bindParam(':serial_number', $this->serial_number);
         $stmt->bindParam(':asset_tag', $this->asset_tag);
         $stmt->bindParam(':model_id', $this->model_id);
-        $stmt->bindParam(':purchase_date', $this->purchase_date);
-        $stmt->bindParam(':warranty_expiry_date', $this->warranty_expiry_date);
+        
+        // Bind de las fechas
+        if ($this->purchase_date === null) {
+            $stmt->bindValue(':purchase_date', null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindParam(':purchase_date', $this->purchase_date);
+        }
+        
+        if ($this->warranty_expiry_date === null) {
+            $stmt->bindValue(':warranty_expiry_date', null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindParam(':warranty_expiry_date', $this->warranty_expiry_date);
+        }
+        
         $stmt->bindParam(':status', $this->status);
         $stmt->bindParam(':condition_status', $this->condition_status);
         $stmt->bindParam(':notes', $this->notes);
-        $stmt->bindParam(':client_id', $this->client_id);
-        $stmt->bindParam(':location_id', $this->location_id);
-        $stmt->bindParam(':current_user_id', $this->current_user_id);
+        
+        // Bind de las claves foráneas con manejo de NULL
+        if ($this->client_id === null) {
+            $stmt->bindValue(':client_id', null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindParam(':client_id', $this->client_id);
+        }
+        
+        if ($this->location_id === null) {
+            $stmt->bindValue(':location_id', null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindParam(':location_id', $this->location_id);
+        }
+        
+        if ($this->current_user_id === null) {
+            $stmt->bindValue(':current_user_id', null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindParam(':current_user_id', $this->current_user_id);
+        }
         
         // Ejecutar
         if($stmt->execute()) {

@@ -4,10 +4,10 @@ require_once 'app/controllers/SupportController.php';
 $supportController = new SupportController();
 
 // Obtener listas para los selectores
-
 $users = $supportController->getUserOptions();
 $statuses = $supportController->getStatusOptions();
 $priorities = $supportController->getPriorityOptions();
+$clients = $supportController->getClientOptions();
 ?>
 
 <div id="content" class="p-4 p-md-5 pt-5">
@@ -45,6 +45,29 @@ $priorities = $supportController->getPriorityOptions();
                                     </div>
                                     
                                     <div class="mb-4">
+                                        <label for="request_type" class="form-label fw-bold">Tipo de Solicitud</label>
+                                        <select class="form-select" id="request_type" name="request_type" required>
+                                            <option value="">Seleccione un tipo</option>
+                                            <?php foreach($supportController->getRequestTypeOptions() as $value => $label): ?>
+                                                <option value="<?php echo $value; ?>"><?php echo htmlspecialchars($label); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <div class="invalid-feedback">Por favor seleccione un tipo de solicitud</div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="hardware_id" class="form-label fw-bold">Hardware</label>
+                                        <select class="form-select" id="hardware_id" name="hardware_id">
+                                            <option value="">Seleccione un hardware (opcional)</option>
+                                            <?php foreach($supportController->getHardwareOptions() as $hardware): ?>
+                                                <option value="<?php echo $hardware['id']; ?>">
+                                                    <?php echo htmlspecialchars($hardware['name']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-4">
                                         <label for="description" class="form-label fw-bold">Descripción</label>
                                         <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
                                         <div class="invalid-feedback">Por favor ingrese una descripción</div>
@@ -52,7 +75,7 @@ $priorities = $supportController->getPriorityOptions();
                                     
                                     <div class="mb-4">
                                         <label for="solution" class="form-label fw-bold">Solución</label>
-                                        <textarea class="form-control" id="solution" name="solution" rows="4"></textarea>
+                                        <textarea class="form-control" id="solution" name="resolution_notes" rows="4"></textarea>
                                     </div>
                                     
                                     <div class="mb-0">
@@ -107,7 +130,8 @@ $priorities = $supportController->getPriorityOptions();
                                         <select class="form-select" id="assigned_to" name="assigned_to">
                                             <option value="">Sin Asignar</option>
                                             <?php foreach($users as $user): ?>
-                                                <option value="<?php echo $user['id']; ?>">
+                                                <option value="<?php echo $user['id']; ?>" 
+                                                        data-client="<?php echo $user['client_id'] ?? ''; ?>">
                                                     <?php echo htmlspecialchars($user['name']); ?>
                                                 </option>
                                             <?php endforeach; ?>
@@ -150,4 +174,35 @@ $priorities = $supportController->getPriorityOptions();
         }, false);
     });
 })();
+
+// Filtrar usuarios por cliente seleccionado
+document.addEventListener('DOMContentLoaded', function() {
+    const clientSelect = document.getElementById('client_id');
+    const userSelect = document.getElementById('assigned_to');
+    
+    if (clientSelect && userSelect) {
+        clientSelect.addEventListener('change', function() {
+            const clientId = this.value;
+            const userOptions = userSelect.querySelectorAll('option');
+            
+            userOptions.forEach(option => {
+                if (option.value === '') {
+                    option.style.display = 'block'; // Siempre mostrar la opción "Sin Asignar"
+                } else {
+                    const optionClientId = option.getAttribute('data-client');
+                    if (clientId === '' || optionClientId === clientId) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Resetear la selección si la opción actual no está visible
+            if (userSelect.selectedOptions[0] && userSelect.selectedOptions[0].style.display === 'none') {
+                userSelect.value = '';
+            }
+        });
+    }
+});
 </script> 

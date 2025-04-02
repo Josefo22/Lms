@@ -169,26 +169,32 @@ class InventoryController {
         
         // Asignar datos al modelo
         $this->hardware->serial_number = $data['serial_number'];
-        $this->hardware->asset_tag = $data['asset_tag'];
+        $this->hardware->asset_tag = $data['asset_tag'] ?? '';
         $this->hardware->model_id = $data['model_id'];
-        $this->hardware->purchase_date = $data['purchase_date'];
+        $this->hardware->purchase_date = $data['purchase_date'] ?? null;
         $this->hardware->warranty_expiry_date = $data['warranty_expiry_date'] ?? null;
         $this->hardware->status = $data['status'];
-        $this->hardware->condition_status = $data['condition_status'];
-        $this->hardware->notes = $data['notes'] ?? null;
-        $this->hardware->client_id = $data['client_id'] ?? null;
-        $this->hardware->location_id = $data['location_id'] ?? null;
-        $this->hardware->current_user_id = $data['current_user_id'] ?? null;
+        $this->hardware->condition_status = $data['condition_status'] ?? 'Good';
+        $this->hardware->notes = $data['notes'] ?? '';
+        
+        // Manejo correcto de valores nulos o vacíos para claves foráneas
+        $this->hardware->client_id = (!empty($data['client_id'])) ? $data['client_id'] : null;
+        $this->hardware->location_id = (!empty($data['location_id'])) ? $data['location_id'] : null;
+        $this->hardware->current_user_id = (!empty($data['current_user_id'])) ? $data['current_user_id'] : null;
         
         // Actualizar el hardware
         if($this->hardware->update()) {
             // Si cambió el cliente, crear registro en historial
-            if($data['client_id'] != $current_client_id) {
+            if($this->hardware->client_id != $current_client_id) {
                 $this->assignment->hardware_id = $id;
-                $this->assignment->client_id = $data['client_id'];
+                $this->assignment->client_id = $this->hardware->client_id;
                 $this->assignment->assignment_date = date('Y-m-d H:i:s');
                 $this->assignment->notes = "Actualización de asignación";
-                $this->assignment->create();
+                
+                // Solo crear el registro si hay un cliente asignado
+                if($this->hardware->client_id) {
+                    $this->assignment->create();
+                }
             }
             
             return [
@@ -234,11 +240,14 @@ class InventoryController {
     }
     public function getCategories() {
         try {
-            $query = "SELECT category_id, category_name FROM categories ORDER BY category_name ASC";
-            $stmt = $this->db->prepare($query);
-            $stmt->execute();
+            $result = $this->category->read();
+            $categories = [];
             
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                $categories[] = $row;
+            }
+            
+            return $categories;
         } catch (PDOException $e) {
             // Manejar el error, posiblemente registrándolo
             error_log("Error al obtener categorías: " . $e->getMessage());
@@ -248,11 +257,18 @@ class InventoryController {
     public function getLocations($client_id = null) {
         try {
             if ($client_id) {
-                $query = "SELECT location_id, location_name FROM locations WHERE client_id = :client_id ORDER BY location_name ASC";
+                $query = "SELECT l.location_id, l.location_name, l.client_id, c.client_name 
+                          FROM locations l 
+                          LEFT JOIN clients c ON l.client_id = c.client_id 
+                          WHERE l.client_id = :client_id 
+                          ORDER BY l.location_name ASC";
                 $stmt = $this->db->prepare($query);
                 $stmt->bindParam(':client_id', $client_id, PDO::PARAM_INT);
             } else {
-                $query = "SELECT location_id, location_name FROM locations ORDER BY location_name ASC";
+                $query = "SELECT l.location_id, l.location_name, l.client_id, c.client_name 
+                          FROM locations l 
+                          LEFT JOIN clients c ON l.client_id = c.client_id 
+                          ORDER BY l.location_name ASC";
                 $stmt = $this->db->prepare($query);
             }
             
@@ -304,17 +320,27 @@ class InventoryController {
             $result['locations'][] = $row;
         }
         
+        // Obtener usuarios
+        $result['users'] = $this->getUsers();
+        
         return $result;
     }
     
-    // Obtener opciones de ubicaciones por cliente
+    // Obtener ubicaciones por cliente
     public function getLocationsByClient($client_id) {
-        $locationData = $this->location->readByClient($client_id);
-        $result = [];
-        while($row = $locationData->fetch(PDO::FETCH_ASSOC)) {
-            $result[] = $row;
+        try {
+            $result = $this->location->readByClient($client_id);
+            $locations = [];
+            
+            while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                $locations[] = $row;
+            }
+            
+            return $locations;
+        } catch (PDOException $e) {
+            error_log("Error al obtener ubicaciones por cliente: " . $e->getMessage());
+            return [];
         }
-        return $result;
     }
     
     // Crear nuevo modelo
@@ -338,39 +364,69 @@ class InventoryController {
         }
     }
     
-    // Crear nueva marca
+    // Crear una nueva marca
     public function createBrand($data) {
-        $this->brand->brand_name = $data['brand_name'];
-        
-        if($this->brand->create()) {
-            return [
-                'success' => true,
-                'message' => 'Marca creada correctamente',
-                'brand_id' => $this->brand->brand_id
-            ];
-        } else {
+        try {
+            // Asegurarse de que la clase Brand existe
+            if (!class_exists('Brand')) {
+                throw new Exception('La clase Brand no está definida');
+            }
+            
+            // Asignar datos al modelo
+            $this->brand->brand_name = $data['brand_name'];
+            
+            // Crear la marca
+            if($this->brand->create()) {
+                return [
+                    'success' => true,
+                    'message' => 'Marca creada correctamente',
+                    'brand_id' => $this->brand->brand_id
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Error al crear la marca'
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error al crear marca: " . $e->getMessage());
             return [
                 'success' => false,
-                'message' => 'Error al crear la marca'
+                'message' => 'Error al crear la marca: ' . $e->getMessage()
             ];
         }
     }
     
-    // Crear nueva categoría
+    // Crear una nueva categoría
     public function createCategory($data) {
-        $this->category->category_name = $data['category_name'];
-        $this->category->description = $data['description'] ?? null;
-        
-        if($this->category->create()) {
-            return [
-                'success' => true,
-                'message' => 'Categoría creada correctamente',
-                'category_id' => $this->category->category_id
-            ];
-        } else {
+        try {
+            // Asegurarse de que la clase HardwareCategory existe
+            if (!class_exists('HardwareCategory')) {
+                throw new Exception('La clase HardwareCategory no está definida');
+            }
+            
+            // Asignar datos al modelo
+            $this->category->category_name = $data['category_name'];
+            $this->category->description = $data['description'] ?? '';
+            
+            // Crear la categoría
+            if($this->category->create()) {
+                return [
+                    'success' => true,
+                    'message' => 'Categoría creada correctamente',
+                    'category_id' => $this->category->category_id
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Error al crear la categoría'
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error al crear categoría: " . $e->getMessage());
             return [
                 'success' => false,
-                'message' => 'Error al crear la categoría'
+                'message' => 'Error al crear la categoría: ' . $e->getMessage()
             ];
         }
     }
@@ -438,33 +494,348 @@ class InventoryController {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Obtener usuarios para el formulario
+    public function getUsers() {
+        $query = "SELECT user_id, CONCAT(first_name, ' ', last_name) AS name, 
+                 job_title, client_id FROM users ORDER BY first_name, last_name";
+        $stmt = $this->db->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Obtener todas las marcas
     public function getBrands() {
-        $result = $this->brand->read();
-        $brands = [];
-        
-        while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-            $brands[] = $row;
+        try {
+            $result = $this->brand->read();
+            $brands = [];
+            
+            while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                $brands[] = $row;
+            }
+            
+            return $brands;
+        } catch (PDOException $e) {
+            error_log("Error al obtener marcas: " . $e->getMessage());
+            return [];
         }
-        
-        return $brands;
     }
     
     // Obtener modelos por marca
     public function getModelsByBrand($brand_id) {
-        $query = 'SELECT m.model_id, m.model_name, m.brand_id, m.category_id, m.specifications, 
-                    b.brand_name, c.category_name
-                  FROM models m
-                  JOIN brands b ON m.brand_id = b.brand_id
-                  JOIN hardwarecategories c ON m.category_id = c.category_id
-                  WHERE m.brand_id = :brand_id
-                  ORDER BY m.model_name';
-                  
-        $stmt = $this->db->prepare($query);
-        $stmt->bindParam(':brand_id', $brand_id);
-        $stmt->execute();
-        
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $result = $this->model->getByBrand($brand_id);
+            $models = [];
+            
+            while($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                $models[] = $row;
+            }
+            
+            return $models;
+        } catch (PDOException $e) {
+            error_log("Error al obtener modelos por marca: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // Actualizar una categoría existente
+    public function updateCategory($id, $data) {
+        try {
+            // Validar ID
+            if (!$id) {
+                return [
+                    'success' => false,
+                    'message' => 'ID de categoría no proporcionado'
+                ];
+            }
+
+            // Asignar datos al modelo
+            $this->category->category_id = $id;
+            
+            // Verificar que la categoría existe
+            if (!$this->category->read_single()) {
+                return [
+                    'success' => false,
+                    'message' => 'Categoría no encontrada'
+                ];
+            }
+            
+            $this->category->category_name = $data['category_name'];
+            $this->category->description = $data['description'] ?? '';
+            
+            // Actualizar la categoría
+            if ($this->category->update()) {
+                return [
+                    'success' => true,
+                    'message' => 'Categoría actualizada correctamente'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Error al actualizar la categoría'
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error al actualizar categoría: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error al actualizar la categoría: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    // Eliminar una categoría
+    public function deleteCategory($id) {
+        try {
+            // Validar ID
+            if (!$id) {
+                return [
+                    'success' => false,
+                    'message' => 'ID de categoría no proporcionado'
+                ];
+            }
+            
+            // Asignar ID al modelo
+            $this->category->category_id = $id;
+            
+            // Verificar que la categoría existe
+            if (!$this->category->read_single()) {
+                return [
+                    'success' => false,
+                    'message' => 'Categoría no encontrada'
+                ];
+            }
+            
+            // Intentar eliminar la categoría
+            if ($this->category->delete()) {
+                return [
+                    'success' => true,
+                    'message' => 'Categoría eliminada correctamente'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'No se puede eliminar la categoría porque tiene modelos asociados'
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error al eliminar categoría: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error al eliminar la categoría: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    // Actualizar una marca existente
+    public function updateBrand($id, $data) {
+        try {
+            // Validar ID
+            if (!$id) {
+                return [
+                    'success' => false,
+                    'message' => 'ID de marca no proporcionado'
+                ];
+            }
+
+            // Asignar datos al modelo
+            $this->brand->brand_id = $id;
+            
+            // Verificar que la marca existe
+            if (!$this->brand->read_single()) {
+                return [
+                    'success' => false,
+                    'message' => 'Marca no encontrada'
+                ];
+            }
+            
+            $this->brand->brand_name = $data['brand_name'];
+            
+            // Actualizar la marca
+            if ($this->brand->update()) {
+                return [
+                    'success' => true,
+                    'message' => 'Marca actualizada correctamente'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Error al actualizar la marca'
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error al actualizar marca: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error al actualizar la marca: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    // Eliminar una marca
+    public function deleteBrand($id) {
+        try {
+            // Validar ID
+            if (!$id) {
+                return [
+                    'success' => false,
+                    'message' => 'ID de marca no proporcionado'
+                ];
+            }
+            
+            // Asignar ID al modelo
+            $this->brand->brand_id = $id;
+            
+            // Verificar que la marca existe
+            if (!$this->brand->read_single()) {
+                return [
+                    'success' => false,
+                    'message' => 'Marca no encontrada'
+                ];
+            }
+            
+            // Intentar eliminar la marca
+            if ($this->brand->delete()) {
+                return [
+                    'success' => true,
+                    'message' => 'Marca eliminada correctamente'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'No se puede eliminar la marca porque tiene modelos asociados'
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error al eliminar marca: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error al eliminar la marca: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    // Obtener todos los modelos
+    public function getModels() {
+        try {
+            $query = "SELECT m.model_id, m.model_name, m.brand_id, m.category_id, m.specifications, 
+                          b.brand_name, c.category_name
+                      FROM models m
+                      JOIN brands b ON m.brand_id = b.brand_id
+                      JOIN hardwarecategories c ON m.category_id = c.category_id
+                      ORDER BY m.model_name";
+            $stmt = $this->db->prepare($query);
+            $stmt->execute();
+            
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            error_log("Error al obtener modelos: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    // Actualizar un modelo existente
+    public function updateModel($id, $data) {
+        try {
+            // Validar ID
+            if (!$id) {
+                return [
+                    'success' => false,
+                    'message' => 'ID de modelo no proporcionado'
+                ];
+            }
+            
+            // Asignar datos al modelo
+            $this->model->model_id = $id;
+            
+            // Verificar que el modelo existe
+            if (!$this->model->read_single()) {
+                return [
+                    'success' => false,
+                    'message' => 'Modelo no encontrado'
+                ];
+            }
+            
+            $this->model->model_name = $data['model_name'];
+            $this->model->brand_id = $data['brand_id'];
+            $this->model->category_id = $data['category_id'];
+            $this->model->specifications = $data['specifications'] ?? '';
+            
+            // Actualizar el modelo
+            if ($this->model->update()) {
+                return [
+                    'success' => true,
+                    'message' => 'Modelo actualizado correctamente'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Error al actualizar el modelo'
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error al actualizar modelo: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error al actualizar el modelo: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    // Eliminar un modelo
+    public function deleteModel($id) {
+        try {
+            // Validar ID
+            if (!$id) {
+                return [
+                    'success' => false,
+                    'message' => 'ID de modelo no proporcionado'
+                ];
+            }
+            
+            // Asignar ID al modelo
+            $this->model->model_id = $id;
+            
+            // Verificar que el modelo existe
+            if (!$this->model->read_single()) {
+                return [
+                    'success' => false,
+                    'message' => 'Modelo no encontrado'
+                ];
+            }
+            
+            // Verificar si hay hardware asociado
+            $query = "SELECT COUNT(*) as count FROM hardware WHERE model_id = :model_id";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(':model_id', $id);
+            $stmt->execute();
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($row['count'] > 0) {
+                return [
+                    'success' => false,
+                    'message' => 'No se puede eliminar el modelo porque tiene equipos asociados'
+                ];
+            }
+            
+            // Intentar eliminar el modelo
+            if ($this->model->delete()) {
+                return [
+                    'success' => true,
+                    'message' => 'Modelo eliminado correctamente'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Error al eliminar el modelo'
+                ];
+            }
+        } catch (Exception $e) {
+            error_log("Error al eliminar modelo: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error al eliminar el modelo: ' . $e->getMessage()
+            ];
+        }
     }
 }
 ?> 

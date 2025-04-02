@@ -3,6 +3,8 @@
 require_once 'app/controllers/NotificationController.php';
 $notificationController = new NotificationController();
 $notifications = $notificationController->getNotifications();
+
+// Resto del contenido HTML
 ?>
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid px-4">

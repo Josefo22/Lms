@@ -28,6 +28,7 @@ $statuses = $supportController->getStatusOptions();
 $priorities = $supportController->getPriorityOptions();
 $requestTypeOptions = $supportController->getRequestTypeOptions();
 $hardwareOptions = $supportController->getHardwareOptions();
+$clients = $supportController->getClientOptions();
 ?>
 
 <div id="content" class="p-4 p-md-5 pt-5">
@@ -139,11 +140,25 @@ $hardwareOptions = $supportController->getHardwareOptions();
                                 </div>
                                 <div class="card-body">
                                     <div class="mb-3">
+                                        <label for="client_id" class="form-label fw-bold">Cliente</label>
+                                        <select class="form-select" id="client_id" name="client_id">
+                                            <option value="">Sin Asignar</option>
+                                            <?php foreach($clients as $client): ?>
+                                                <option value="<?php echo $client['id']; ?>" 
+                                                        <?php echo $ticket['client_id'] == $client['id'] ? 'selected' : ''; ?>>
+                                                    <?php echo htmlspecialchars($client['name']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
                                         <label for="assigned_to" class="form-label fw-bold">Asignar a</label>
                                         <select class="form-select" id="assigned_to" name="assigned_to">
                                             <option value="">Sin Asignar</option>
                                             <?php foreach($users as $user): ?>
                                                 <option value="<?php echo $user['id']; ?>" 
+                                                        data-client="<?php echo $user['client_id'] ?? ''; ?>"
                                                         <?php echo $ticket['assigned_to'] == $user['id'] ? 'selected' : ''; ?>>
                                                     <?php echo htmlspecialchars($user['name']); ?>
                                                 </option>
@@ -211,6 +226,40 @@ document.getElementById('editTicketForm').addEventListener('submit', function(e)
     if (missingFields.length > 0) {
         e.preventDefault();
         alert('Por favor complete los siguientes campos requeridos:\n' + missingFields.join('\n'));
+    }
+});
+
+// Filtrar usuarios por cliente seleccionado
+document.addEventListener('DOMContentLoaded', function() {
+    const clientSelect = document.getElementById('client_id');
+    const userSelect = document.getElementById('assigned_to');
+    
+    if (clientSelect && userSelect) {
+        clientSelect.addEventListener('change', function() {
+            const clientId = this.value;
+            const userOptions = userSelect.querySelectorAll('option');
+            
+            userOptions.forEach(option => {
+                if (option.value === '') {
+                    option.style.display = 'block'; // Siempre mostrar la opción "Sin Asignar"
+                } else {
+                    const optionClientId = option.getAttribute('data-client');
+                    if (clientId === '' || optionClientId === clientId) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Resetear la selección si la opción actual no está visible
+            if (userSelect.selectedOptions[0] && userSelect.selectedOptions[0].style.display === 'none') {
+                userSelect.value = '';
+            }
+        });
+        
+        // Inicializar los filtros al cargar la página
+        clientSelect.dispatchEvent(new Event('change'));
     }
 });
 </script> 
